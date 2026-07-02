@@ -46,8 +46,8 @@ export const GRAVITY_PAD_COOLDOWN_MS = 600;
 export const CRUMBLE_DELAY_MS = 300;
 export const CRUMBLE_FALL_MS = 350;
 
-/** Each collected coin shaves this off the final time. */
-export const COIN_BONUS_MS = 250;
+/** Each collected coin shaves this off the final time (shared with server). */
+export { COIN_BONUS_MS } from '../../shared/level';
 
 /** Death → back at the level start (spec: under 500 ms). */
 export const RESPAWN_DELAY_MS = 400;

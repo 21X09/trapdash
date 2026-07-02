@@ -25,6 +25,8 @@ export type RunSubmitRequest = {
   /** Per-level clear times, ms, in gauntlet order. */
   splits: number[];
   deaths: number;
+  /** Coins collected; the server applies the COIN_BONUS_MS discount. */
+  coins: number;
 };
 
 export type RunSubmitResponse = {

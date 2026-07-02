@@ -5,6 +5,9 @@ export const TILE_PX = 16;
 export const MAX_LEVEL_NAME = 24;
 export const MAX_TILES = GRID_W * GRID_H;
 
+/** Each collected coin shaves this off the run's total time. */
+export const COIN_BONUS_MS = 250;
+
 export type TileId =
   | 'block'
   | 'spike'

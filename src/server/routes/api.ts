@@ -16,7 +16,11 @@ import type {
   VoteResponse,
 } from '../../shared/api';
 import type { Level } from '../../shared/level';
-import { MAX_LEVEL_NAME, validateLevelGrid } from '../../shared/level';
+import {
+  COIN_BONUS_MS,
+  MAX_LEVEL_NAME,
+  validateLevelGrid,
+} from '../../shared/level';
 import { isValidDayKey, previousDayKey, todayKey } from '../core/days';
 import { ensureToday } from '../core/rotation';
 import {
@@ -39,6 +43,8 @@ const LEADERBOARD_TOP_N = 10;
 /** How many top candidates to consider when dealing levels to vote on. */
 const VOTE_DEAL_WINDOW = 50;
 const VOTE_DEAL_SIZE = 2;
+/** Generous ceiling on coins per run; real gauntlets hold far fewer. */
+const MAX_RUN_COINS = 100;
 
 const errorJson = (c: Context, message: string, status: 400 | 401 | 404) =>
   c.json<ErrorResponse>({ status: 'error', message }, status);
@@ -108,9 +114,12 @@ api.post('/run', async (c) => {
   const body = await readBody<RunSubmitRequest>(c);
   if (!body) return errorJson(c, 'invalid request body', 400);
 
-  const { splits, deaths } = body;
+  const { splits, deaths, coins } = body;
   if (!Number.isInteger(deaths) || deaths < 0) {
     return errorJson(c, 'invalid death count', 400);
+  }
+  if (!Number.isInteger(coins) || coins < 0 || coins > MAX_RUN_COINS) {
+    return errorJson(c, 'invalid coin count', 400);
   }
 
   const { day, levelIds } = await ensureToday();
@@ -125,10 +134,11 @@ api.post('/run', async (c) => {
     return errorJson(c, 'run rejected: impossible level split', 400);
   }
 
-  const totalMs = Math.round(splits.reduce((sum, split) => sum + split, 0));
-  if (totalMs < MIN_TOTAL_MS) {
+  const rawTotalMs = Math.round(splits.reduce((sum, split) => sum + split, 0));
+  if (rawTotalMs < MIN_TOTAL_MS) {
     return errorJson(c, 'run rejected: impossible total time', 400);
   }
+  const totalMs = Math.max(MIN_SPLIT_MS, rawTotalMs - coins * COIN_BONUS_MS);
 
   const lbKey = KEYS.leaderboard(day);
   const existing = await redis.zScore(lbKey, username);
