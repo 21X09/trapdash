@@ -1,26 +1,33 @@
-import { Boot } from './scenes/Boot';
-import { GameOver } from './scenes/GameOver';
-import { Game as MainGame } from './scenes/Game';
-import { MainMenu } from './scenes/MainMenu';
 import * as Phaser from 'phaser';
 import { AUTO, Game } from 'phaser';
+import { Boot } from './scenes/Boot';
+import { Hub } from './scenes/Hub';
 import { Preloader } from './scenes/Preloader';
+import { Results } from './scenes/Results';
+import { Run } from './scenes/Run';
 
-//  Find out more information about the Game Config at:
-//  https://docs.phaser.io/api-documentation/typedef/types-core#gameconfig
+//  Scene flow: Boot → Preloader → Hub → Run → Results.
 const config: Phaser.Types.Core.GameConfig = {
   type: AUTO,
   parent: 'game-container',
-  backgroundColor: '#028af8',
+  backgroundColor: '#0f1626',
   scale: {
-    // Keep a fixed game resolution but automatically scale it to fit within the available
-    // web-view / device while maintaining aspect ratio.
+    // Fill the web-view; each scene lays itself out on resize, and the Run
+    // scene re-derives its camera zoom from the viewport height.
     mode: Phaser.Scale.RESIZE,
     autoCenter: Phaser.Scale.CENTER_BOTH,
     width: 1024,
     height: 768,
   },
-  scene: [Boot, Preloader, MainMenu, MainGame, GameOver],
+  physics: {
+    default: 'arcade',
+    arcade: {
+      // Gravity is applied per-body so gravity pads can flip it for the runner.
+      gravity: { x: 0, y: 0 },
+      debug: false,
+    },
+  },
+  scene: [Boot, Preloader, Hub, Run, Results],
 };
 
 const StartGame = (parent: string) => {
